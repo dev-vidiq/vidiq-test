@@ -48,7 +48,7 @@ jobs:
           retention-days: 30
 
       - name: Send Slack notification
-        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        if: always()
         run: |
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
             echo "SLACK_WEBHOOK_URL is not set — skipping Slack notification."
