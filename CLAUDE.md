@@ -31,18 +31,16 @@ QA test automation project for the VidIQ web app.
 - Always run tests after writing them
 
 ### Selector resilience (self-healing tests)
+VidIQ does not use `data-testid` attributes. Tests locate elements the same way
+a human (or browser agent) would — by what is visible on screen: role, label, or text.
+
 Pick selectors in this order — top is most resilient, bottom is most fragile:
 
-1. `getByRole('button', { name: 'Save' })` — best, survives CSS/markup rewrites
+1. `getByRole('button', { name: 'Save' })` — best, mirrors how a person reads the UI
 2. `getByLabel('Email address')` — great for form fields
-3. `getByText('Keyword score')` — good for static copy
-4. `getByTestId('kw-score-widget')` — good when devs add `data-testid` attributes
-5. CSS class selectors — fragile, breaks on any style refactor
-6. XPath — most fragile, never use
-
-**VidIQ does not use `data-testid` yet.** Use `getByRole` and `getByText` exclusively
-until devs start adding `data-testid`. When requesting new attributes from devs,
-ask for: `data-testid="<feature>-<element>"` e.g. `data-testid="keyword-search-input"`.
+3. `getByText('Keyword score')` — good for static visible copy
+4. CSS class selectors — fragile, breaks on any style refactor, avoid
+5. XPath — most fragile, never use
 
 ### A/B experiments
 - Always call `forceControlVariant(page)` before `page.goto()` in every test
@@ -56,7 +54,7 @@ ask for: `data-testid="<feature>-<element>"` e.g. `data-testid="keyword-search-i
 
 ### Visual regression
 - Visual tests live in `tests/visual/`
-- Baseline PNGs live in `tests/visual/__snapshots__/` and are committed to git
+- Baseline PNGs live in `tests/visual/*.spec.js-snapshots/` and are committed to git
 - To update baselines after an intentional UI change: trigger the workflow manually
   and enable "Update visual snapshots" — it regenerates and auto-commits the baselines
 - To mask dynamic content (counters, dates): pass `mask: [page.locator('...')]` to `toHaveScreenshot`
