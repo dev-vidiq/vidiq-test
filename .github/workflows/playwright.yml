@@ -131,7 +131,7 @@ jobs:
 
           # Build artifact link section if upload succeeded
           if [ -n "$ARTIFACT_URL" ]; then
-            ARTIFACT_SECTION=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"📎 *Screenshots \& videos:* <$ARTIFACT_URL|Download artifact>\"}}"
+            ARTIFACT_SECTION=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"📎 *Screenshots + videos:* <$ARTIFACT_URL|Download artifact>\"}}"
           else
             ARTIFACT_SECTION=""
           fi
