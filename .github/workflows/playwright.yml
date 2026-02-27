@@ -137,12 +137,22 @@ jobs:
             REASON=""
           fi
 
-          # Build PR section when triggered by a pull_request event
+          # Build context section:
+          #   pull_request → PR title + link
+          #   push         → commit message + link
+          #   otherwise    → nothing extra
           PR_NUMBER="${{ github.event.pull_request.number }}"
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          COMMIT_URL="https://github.com/$REPO/commit/$COMMIT_SHA"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+
           if [ -n "$PR_NUMBER" ]; then
             PR_SECTION=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*PR:* <$PR_URL|#$PR_NUMBER $PR_TITLE>\"}}"
+          elif [ "$EVENT" == "push" ]; then
+            PR_SECTION=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit:* <$COMMIT_URL|\`$SHORT_SHA\`> $COMMIT_MSG\"}}"
           else
             PR_SECTION=""
           fi
