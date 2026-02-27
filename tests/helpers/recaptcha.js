@@ -1,4 +1,11 @@
 // @ts-check
+import { config } from 'dotenv';
+
+// Load .env in the worker process. dotenvx does not propagate vars set in the
+// main process across Playwright's fork boundary, so each worker must load its
+// own copy. In CI there is no .env file — this is a no-op and GitHub Actions
+// secrets are already present as native env vars.
+config();
 
 /**
  * Mocks reCAPTCHA for automated tests in headless environments.

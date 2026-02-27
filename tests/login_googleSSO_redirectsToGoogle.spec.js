@@ -1,5 +1,8 @@
 // @ts-check
 import { test, expect, devices } from '@playwright/test';
+import { config } from 'dotenv';
+
+config();
 
 test.use({ ...devices['Desktop Chrome'] });
 

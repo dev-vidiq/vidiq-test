@@ -2,7 +2,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import { config } from 'dotenv';
 
-// Load .env locally. In CI, environment variables come from GitHub secrets.
+// Load .env for the main Playwright process (used to build extraHTTPHeaders below).
+// Each test worker also calls config() independently via tests/helpers/recaptcha.js
+// because dotenvx does not propagate vars to forked worker processes.
 config();
 
 const bypassHeaderName = process.env.RECAPTCHA_BYPASS_HEADER_NAME;
