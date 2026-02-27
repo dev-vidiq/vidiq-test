@@ -1,0 +1,90 @@
+name: Playwright E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: Run Playwright Tests
+    runs-on: ubuntu-latest
+
+    env:
+      TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+      RECAPTCHA_BYPASS_HEADER_NAME: ${{ secrets.RECAPTCHA_BYPASS_HEADER_NAME }}
+      RECAPTCHA_BYPASS_HEADER_VALUE: ${{ secrets.RECAPTCHA_BYPASS_HEADER_VALUE }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium browser
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Playwright tests
+        id: playwright
+        run: npx playwright test --project=chromium
+        continue-on-error: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Send Slack notification
+        if: always()
+        run: |
+          if [ "${{ steps.playwright.outcome }}" == "success" ]; then
+            STATUS="✅ *All tests passed*"
+            COLOR="good"
+          else
+            STATUS="❌ *Some tests failed*"
+            COLOR="danger"
+          fi
+
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          RUN_URL="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
+          ACTOR="${{ github.actor }}"
+          EVENT="${{ github.event_name }}"
+
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"attachments\": [
+                {
+                  \"color\": \"$COLOR\",
+                  \"blocks\": [
+                    {
+                      \"type\": \"header\",
+                      \"text\": {
+                        \"type\": \"plain_text\",
+                        \"text\": \"VidIQ E2E Test Run\"
+                      }
+                    },
+                    {
+                      \"type\": \"section\",
+                      \"text\": {
+                        \"type\": \"mrkdwn\",
+                        \"text\": \"$STATUS\n*Branch:* \`$BRANCH\`\n*Triggered by:* $ACTOR ($EVENT)\n*Report:* <$RUN_URL|View on GitHub>\"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }"
