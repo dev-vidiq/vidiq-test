@@ -1,8 +1,6 @@
 // @ts-check
 import { test, expect, devices } from '@playwright/test';
-import { config } from 'dotenv';
-
-config();
+import { mockRecaptcha } from './helpers/recaptcha.js';
 
 const TEST_EMAIL = process.env.TEST_EMAIL;
 const RECAPTCHA_BYPASS_HEADER_NAME = process.env.RECAPTCHA_BYPASS_HEADER_NAME;
@@ -25,14 +23,7 @@ test.afterEach(async ({ page }, testInfo) => {
 });
 
 test('user can reach the reset password form and submit their email', async ({ page }) => {
-  await page.addInitScript(() => {
-    window.grecaptcha = {
-      ready: (cb) => cb(),
-      execute: () => Promise.resolve('bypass-token'),
-      render: () => 0,
-      reset: () => {},
-    };
-  });
+  await mockRecaptcha(page);
 
   await page.goto('https://app.vidiq.com/auth/login');
 

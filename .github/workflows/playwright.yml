@@ -16,6 +16,7 @@ jobs:
       TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
       RECAPTCHA_BYPASS_HEADER_NAME: ${{ secrets.RECAPTCHA_BYPASS_HEADER_NAME }}
       RECAPTCHA_BYPASS_HEADER_VALUE: ${{ secrets.RECAPTCHA_BYPASS_HEADER_VALUE }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
       - name: Checkout repository
@@ -47,8 +48,13 @@ jobs:
           retention-days: 30
 
       - name: Send Slack notification
-        if: always()
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
         run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL is not set — skipping Slack notification."
+            exit 0
+          fi
+
           if [ "${{ steps.playwright.outcome }}" == "success" ]; then
             STATUS="✅ *All tests passed*"
             COLOR="good"
@@ -63,7 +69,7 @@ jobs:
           ACTOR="${{ github.actor }}"
           EVENT="${{ github.event_name }}"
 
-          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d "{
               \"attachments\": [

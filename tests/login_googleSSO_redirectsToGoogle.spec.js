@@ -1,8 +1,5 @@
 // @ts-check
 import { test, expect, devices } from '@playwright/test';
-import { config } from 'dotenv';
-
-config();
 
 const RECAPTCHA_BYPASS_HEADER_NAME = process.env.RECAPTCHA_BYPASS_HEADER_NAME;
 const RECAPTCHA_BYPASS_HEADER_VALUE = process.env.RECAPTCHA_BYPASS_HEADER_VALUE;
