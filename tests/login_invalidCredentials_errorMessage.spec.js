@@ -3,17 +3,10 @@ import { test, expect, devices } from '@playwright/test';
 import { mockRecaptcha } from './helpers/recaptcha.js';
 
 const TEST_EMAIL = process.env.TEST_EMAIL;
-const RECAPTCHA_BYPASS_HEADER_NAME = process.env.RECAPTCHA_BYPASS_HEADER_NAME;
-const RECAPTCHA_BYPASS_HEADER_VALUE = process.env.RECAPTCHA_BYPASS_HEADER_VALUE;
 
 const WRONG_PASSWORD = 'this-is-not-the-right-password';
 
-test.use({
-  ...devices['Desktop Chrome'],
-  extraHTTPHeaders: {
-    [RECAPTCHA_BYPASS_HEADER_NAME]: RECAPTCHA_BYPASS_HEADER_VALUE,
-  },
-});
+test.use({ ...devices['Desktop Chrome'] });
 
 test.afterEach(async ({ page }, testInfo) => {
   if (testInfo.status !== testInfo.expectedStatus) {

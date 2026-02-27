@@ -5,6 +5,16 @@ import { config } from 'dotenv';
 // Load .env locally. In CI, environment variables come from GitHub secrets.
 config();
 
+const bypassHeaderName = process.env.RECAPTCHA_BYPASS_HEADER_NAME;
+const bypassHeaderValue = process.env.RECAPTCHA_BYPASS_HEADER_VALUE;
+
+// HTTP/2 requires lowercase header names. Normalise here so tests never hit
+// "Invalid header name" errors in headless Chromium on Linux CI.
+const extraHTTPHeaders =
+  bypassHeaderName && bypassHeaderValue
+    ? { [bypassHeaderName.toLowerCase()]: bypassHeaderValue }
+    : {};
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -27,6 +37,9 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    // Send the reCAPTCHA bypass header with every request, for all tests.
+    extraHTTPHeaders,
   },
 
   /* Configure projects for major browsers */

@@ -1,15 +1,7 @@
 // @ts-check
 import { test, expect, devices } from '@playwright/test';
 
-const RECAPTCHA_BYPASS_HEADER_NAME = process.env.RECAPTCHA_BYPASS_HEADER_NAME;
-const RECAPTCHA_BYPASS_HEADER_VALUE = process.env.RECAPTCHA_BYPASS_HEADER_VALUE;
-
-test.use({
-  ...devices['Desktop Chrome'],
-  extraHTTPHeaders: {
-    [RECAPTCHA_BYPASS_HEADER_NAME]: RECAPTCHA_BYPASS_HEADER_VALUE,
-  },
-});
+test.use({ ...devices['Desktop Chrome'] });
 
 test.afterEach(async ({ page }, testInfo) => {
   if (testInfo.status !== testInfo.expectedStatus) {
