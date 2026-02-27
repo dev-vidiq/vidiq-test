@@ -21,6 +21,15 @@ const extraHTTPHeaders =
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
+  // Visual regression tolerance — allows up to 2% of pixels to differ and a
+  // per-pixel colour delta of 0.2 (0–1 scale). Accounts for sub-pixel
+  // rendering differences between machines without hiding real regressions.
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.02,
+      threshold: 0.2,
+    },
+  },
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,

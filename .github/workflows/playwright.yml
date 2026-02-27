@@ -11,6 +11,11 @@ on:
         description: 'Reason for manual run (optional)'
         required: false
         default: 'Manual trigger'
+      update_snapshots:
+        description: 'Update visual regression baselines (commits new snapshots to repo)'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   test:
@@ -42,7 +47,25 @@ jobs:
 
       - name: Run Playwright tests
         id: playwright
-        run: npx playwright test --project=chromium
+        run: |
+          if [ "${{ github.event.inputs.update_snapshots }}" == "true" ]; then
+            npx playwright test --project=chromium --update-snapshots
+          else
+            npx playwright test --project=chromium
+          fi
+
+      - name: Commit updated visual snapshots
+        if: ${{ github.event.inputs.update_snapshots == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/**/__snapshots__/
+          if git diff --cached --quiet; then
+            echo "No snapshot changes to commit."
+          else
+            git commit -m "chore: update visual regression baselines [skip ci]"
+            git push
+          fi
 
       - name: Parse test results
         id: results
