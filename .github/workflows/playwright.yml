@@ -137,6 +137,16 @@ jobs:
             REASON=""
           fi
 
+          # Build PR section when triggered by a pull_request event
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          if [ -n "$PR_NUMBER" ]; then
+            PR_SECTION=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*PR:* <$PR_URL|#$PR_NUMBER $PR_TITLE>\"}}"
+          else
+            PR_SECTION=""
+          fi
+
           if [ "$OUTCOME" == "success" ]; then
             STATUS_HEADER="✅  All tests passed"
             COLOR="good"
@@ -189,6 +199,7 @@ jobs:
                         {\"type\": \"mrkdwn\", \"text\": \"*Report:* <$RUN_URL|View on GitHub>\"}
                       ]
                     }
+                    $PR_SECTION
                     $FAILED_SECTION
                     $ARTIFACT_SECTION
                   ]
