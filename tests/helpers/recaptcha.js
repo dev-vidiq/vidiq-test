@@ -4,18 +4,27 @@
  * Mocks reCAPTCHA for automated tests in headless environments.
  *
  * Two-layer approach to prevent the real reCAPTCHA script from interfering:
- * 1. Intercept the reCAPTCHA API script request and abort it so it never loads.
+ * 1. Intercept the reCAPTCHA API script request and fulfill it with an empty
+ *    200 response. This is safer than abort() — aborting causes a hard network
+ *    error that makes pages stall waiting for reCAPTCHA to initialise, leading
+ *    to timeouts. A successful empty response lets the page proceed normally.
  * 2. Inject a window.grecaptcha stub via addInitScript using Object.defineProperty
  *    so that even if any inline script tries to overwrite it, the mock stays in place.
  *
  * Call this before page.goto() in any test that submits a form protected by reCAPTCHA.
  */
 export async function mockRecaptcha(page) {
-  await page.route(/google\.com\/recaptcha/, (route) => route.abort());
+  await page.route(/google\.com\/recaptcha/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/javascript',
+      body: '',
+    })
+  );
 
   await page.addInitScript(() => {
     const mock = {
-      ready: (cb) => cb(),
+      ready: (cb) => { if (cb) cb(); },
       execute: () => Promise.resolve('bypass-token'),
       render: () => 0,
       reset: () => {},
