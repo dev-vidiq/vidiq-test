@@ -16,7 +16,11 @@ config();
  * @returns {string}
  */
 export function generateTestEmail() {
-  return `anna.bekh+e2e_${Date.now()}@vid.io`;
+  // Use the same +test{number} format as existing VidIQ test accounts
+  // (e.g. anna.bekh+test1000@vid.io) — the server may apply special handling
+  // to this pattern for the dev reCAPTCHA bypass on signup.
+  const random = Math.floor(Math.random() * 900000) + 100000; // 6-digit number
+  return `anna.bekh+test${random}@vid.io`;
 }
 
 /**
