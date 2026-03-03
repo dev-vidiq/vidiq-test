@@ -5,7 +5,7 @@
 QA test automation project for the VidIQ web app.
 
 - **App under test:** https://app.vidiq.com
-- **Test framework:** Playwright with JavaScript
+- **Test framework:** Playwright with TypeScript
 - **Browser:** Chromium only
 - **Test files location:** `/tests` folder
 - **Linear project:** https://linear.app/vidiq/team/E2E/all
@@ -17,17 +17,20 @@ QA test automation project for the VidIQ web app.
 ## Conventions
 
 ### Language & Framework
-- Always write tests in JavaScript (never TypeScript)
+- Always write tests in **TypeScript** (`.spec.ts`)
 - Only use the Chromium browser
+- Run `npm run type-check` after writing new files to catch type errors
 
 ### File Naming
-- Test files must follow this pattern: `feature_action_expected.spec.js`
-- Examples: `search_query_returnsResults.spec.js`, `login_invalidPassword_showsError.spec.js`
+- Group tests by domain — one file per feature area: `login.spec.ts`, `register.spec.ts`
+- Helpers live in `tests/helpers/` as `.ts` files
+- Visual regression tests live in `tests/visual/`
 
 ### Writing Tests
 - Write clear test descriptions in plain English
+- Use `test.describe('Feature', () => { ... })` to group related scenarios
 - Always wait for elements properly — never use fixed delays (no `page.waitForTimeout()`)
-- Always take screenshots on test failure
+- Always take screenshots on test failure (via `test.afterEach`)
 - Always run tests after writing them
 
 ### Selector resilience (self-healing tests)
@@ -48,13 +51,13 @@ Pick selectors in this order — top is most resilient, bottom is most fragile:
 - Never rely on random variant assignment — tests must be deterministic
 
 ### Reusable helpers
-- `tests/helpers/auth.js` — `loginAsTestUser(page)` for any test needing a logged-in state
-- `tests/helpers/recaptcha.js` — `mockRecaptcha(page)` for any form that has reCAPTCHA
-- `tests/helpers/experiments.js` — `forceControlVariant(page)` before every page load
+- `tests/helpers/auth.ts` — `loginAsTestUser(page)` for any test needing a logged-in state
+- `tests/helpers/recaptcha.ts` — `mockRecaptcha(page)` for any form that has reCAPTCHA
+- `tests/helpers/experiments.ts` — `forceControlVariant(page)` before every page load
 
 ### Visual regression
 - Visual tests live in `tests/visual/`
-- Baseline PNGs live in `tests/visual/*.spec.js-snapshots/` and are committed to git
+- Baseline PNGs live in `tests/visual/*.spec.ts-snapshots/` and are committed to git
 - To update baselines after an intentional UI change: trigger the workflow manually
   and enable "Update visual snapshots" — it regenerates and auto-commits the baselines
 - To mask dynamic content (counters, dates): pass `mask: [page.locator('...')]` to `toHaveScreenshot`
