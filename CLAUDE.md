@@ -52,6 +52,16 @@ VidIQ production does not expose `data-testid` attributes. Use semantic selector
 - `tests/helpers/recaptcha.ts` — `mockRecaptcha(page)` for reCAPTCHA-protected forms
 - `tests/helpers/experiments.ts` — `forceControlVariant(page)` to pin A/B tests to control
 
+### Feature ranking script
+Run `npm run rank-features` to query Amplitude and get a ranked list of features by user activity.
+Use this to decide which features to prioritise for new E2E tests.
+
+Requires credentials in `.env`:
+- `AMPLITUDE_API_KEY` — Amplitude → Settings → Projects → your project → API Key
+- `AMPLITUDE_SECRET_KEY` — same location, Secret Key
+
+Optional: `AMPLITUDE_DAYS=30` (default) to change the look-back window.
+
 ### Visual regression
 Visual regression belongs in `vid-io/webapp`, not here.
 If you need a screenshot on failure, use `page.screenshot()` in `test.afterEach`.
