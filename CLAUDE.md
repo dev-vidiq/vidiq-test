@@ -1,16 +1,28 @@
-# VidIQ QA Test Automation
+# VidIQ Production Smoke Tests
 
-## Project Overview
+## Purpose
 
-QA test automation project for the VidIQ web app.
+This repo is a **production smoke monitor** for `app.vidiq.com`.
+
+It runs a small set of critical tests after every deploy to confirm production is healthy.
+Results are posted to **#ai-daily-test-runs-results** on Slack.
+
+**New feature tests belong in `vid-io/webapp`** — see `playwright/tests/logged-out/` there.
+This repo only contains tests that verify production is alive post-deploy.
 
 - **App under test:** https://app.vidiq.com
 - **Test framework:** Playwright with TypeScript
 - **Browser:** Chromium only
-- **Test files location:** `/tests` folder
-- **Linear project:** https://linear.app/vidiq/team/E2E/all
+- **CI:** Runs on push to `main` and on PRs in this repo
 - **Slack channel:** #ai-daily-test-runs-results
-- **A/B testing platform:** Amplitude
+
+---
+
+## What's tested here
+
+| File | Tests | Purpose |
+|---|---|---|
+| `tests/login.spec.ts` | Valid login, invalid login, Google SSO, password reset | Confirms production auth is working |
 
 ---
 
@@ -19,50 +31,27 @@ QA test automation project for the VidIQ web app.
 ### Language & Framework
 - Always write tests in **TypeScript** (`.spec.ts`)
 - Only use the Chromium browser
-- Run `npm run type-check` after writing new files to catch type errors
+- Run `npm run type-check` after writing new files
 
-### File Naming
-- Group tests by domain — one file per feature area: `login.spec.ts`, `register.spec.ts`
-- Helpers live in `tests/helpers/` as `.ts` files
-- Visual regression tests live in `tests/visual/`
+### Writing tests
+- Each test must be independently runnable — no shared state between tests
+- Always wait for elements properly — never use fixed delays (`page.waitForTimeout()`)
+- Failure screenshots are captured automatically via `test.afterEach`
 
-### Writing Tests
-- Write clear test descriptions in plain English
-- Use `test.describe('Feature', () => { ... })` to group related scenarios
-- Always wait for elements properly — never use fixed delays (no `page.waitForTimeout()`)
-- Always take screenshots on test failure (via `test.afterEach`)
-- Always run tests after writing them
+### Selector resilience
+VidIQ production does not expose `data-testid` attributes. Use semantic selectors:
 
-### Selector resilience (self-healing tests)
-VidIQ does not use `data-testid` attributes. Tests locate elements the same way
-a human (or browser agent) would — by what is visible on screen: role, label, or text.
-
-Pick selectors in this order — top is most resilient, bottom is most fragile:
-
-1. `getByRole('button', { name: 'Save' })` — best, mirrors how a person reads the UI
+1. `getByRole('button', { name: 'Save' })` — best
 2. `getByLabel('Email address')` — great for form fields
-3. `getByText('Keyword score')` — good for static visible copy
-4. CSS class selectors — fragile, breaks on any style refactor, avoid
-5. XPath — most fragile, never use
+3. `getByText('Keyword score')` — good for static copy
+4. CSS class selectors — avoid (breaks on style refactors)
+5. XPath — never use
 
-### A/B experiments
-- Always call `forceControlVariant(page)` before `page.goto()` in every test
-- This intercepts Amplitude Experiment and Flagr so tests always run on control
-- Never rely on random variant assignment — tests must be deterministic
-
-### Reusable helpers
-- `tests/helpers/auth.ts` — `loginAsTestUser(page)` for any test needing a logged-in state
-- `tests/helpers/recaptcha.ts` — `mockRecaptcha(page)` for any form that has reCAPTCHA
-- `tests/helpers/experiments.ts` — `forceControlVariant(page)` before every page load
+### Helpers
+- `tests/helpers/auth.ts` — `loginAsTestUser(page)` for authenticated-state tests
+- `tests/helpers/recaptcha.ts` — `mockRecaptcha(page)` for reCAPTCHA-protected forms
+- `tests/helpers/experiments.ts` — `forceControlVariant(page)` to pin A/B tests to control
 
 ### Visual regression
-- Visual tests live in `tests/visual/`
-- Baseline PNGs live in `tests/visual/*.spec.ts-snapshots/` and are committed to git
-- To update baselines after an intentional UI change: trigger the workflow manually
-  and enable "Update visual snapshots" — it regenerates and auto-commits the baselines
-- To mask dynamic content (counters, dates): pass `mask: [page.locator('...')]` to `toHaveScreenshot`
-
-### Workflow
-- When asked to write a new test, always ask to describe the expected behavior first before writing any code
-- When a feature changes, update existing tests rather than creating new ones — avoid duplication
-- After tests pass, summarize results in plain English (not technical language) so the summary can be shared directly with the team
+Visual regression belongs in `vid-io/webapp`, not here.
+If you need a screenshot on failure, use `page.screenshot()` in `test.afterEach`.
